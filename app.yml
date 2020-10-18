@@ -11,8 +11,8 @@ steps:
           value: reserve_port()
         - name: dashboard_port
           value: reserve_port()
-        - name: url
-          value: "dask://{{ engines.dask-master.vars.private_ip }}:{{ engines.dask-master.vars.port }}"
+        - name: address
+          value: "{{ engines.dask-master.vars.private_ip }}:{{ engines.dask-master.vars.port }}"
       orchestrator:
         type: Orchestrator::MainWithWorkers
         deploy_to_main: true
@@ -112,7 +112,7 @@ steps:
                   value: yes
                 - name: RESTARTABLE
                   value: yes
-                - name: DASK_MASTER
+                - name: DASK_MASTER_ADDRESS
                   value: "{{ engines.dask-master.vars.url }}"
       ui:
         buttons:
