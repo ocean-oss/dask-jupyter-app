@@ -43,6 +43,8 @@ steps:
         vars:
           - name: port
             value: reserve_port()
+          - name: nanny_port
+            value: reserve_port()
           - name: dashboard_port
             value: reserve_port()
         orchestrator:
