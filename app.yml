@@ -3,16 +3,16 @@ ocean:
   version: "1"
 steps:
   - engines:
-    - name: dask-master
+    - name: dask-scheduler
       vars:
         - name: private_ip
-          value: "{{ engines.dask-master.deployment.nodes.main.private_ip }}"
+          value: "{{ engines.dask-scheduler.deployment.nodes.main.private_ip }}"
         - name: port
           value: reserve_port()
         - name: dashboard_port
           value: reserve_port()
         - name: address
-          value: "{{ engines.dask-master.vars.private_ip }}:{{ engines.dask-master.vars.port }}"
+          value: "tcp://{{ engines.dask-scheduler.vars.private_ip }}:{{ engines.dask-scheduler.vars.port }}"
       orchestrator:
         type: Orchestrator::MainWithWorkers
         deploy_to_main: true
@@ -28,16 +28,16 @@ steps:
           workdir: /work
           mounts:
             engine: /etc/ocean
-            data_stores: "{{ engines.dask-master.orchestrator.container.workdir }}"
+            data_stores: "{{ engines.dask-scheduler.orchestrator.container.workdir }}"
             ssh: "/home/{{ workspace.user.name }}/.ssh"
           nodes:
             main:
-              command: "{{ engines.dask-master.orchestrator.container.mounts.engine }}/startup.sh"
+              command: "{{ engines.dask-scheduler.orchestrator.container.mounts.engine }}/startup.sh"
       ui:
         buttons:
           - node_target: main
-            label: Dask Master Dashboard
-            url: "http://{{ engines.dask-master.ui.buttons.self.node.public_ip }}:{{ engines.dask-master.vars.dashboard_port }}"
+            label: Dask Scheduler Dashboard
+            url: "http://{{ engines.dask-scheduler.ui.buttons.self.node.public_ip }}:{{ engines.dask-scheduler.vars.dashboard_port }}"
   - engines:
       - name: dask-worker
         vars:
@@ -112,8 +112,8 @@ steps:
                   value: yes
                 - name: RESTARTABLE
                   value: yes
-                - name: DASK_MASTER_ADDRESS
-                  value: "{{ engines.dask-master.vars.url }}"
+                - name: DASK_SCHEDULER
+                  value: "{{ engines.dask-scheduler.vars.url }}"
       ui:
         buttons:
           - node_target: main

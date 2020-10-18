@@ -2,12 +2,12 @@
 
 This app runs a fully-managed Dask cluster of an arbitrary size. It also launches a Jupyter instance that is configured to work with the Dask cluster.
 
-To access the Dask cluster in your notebooks simply use the `DASK_MASTER_ADDRESS` environment variable:
+To access the Dask cluster in your notebooks simply use the `DASK_SCHEDULER` environment variable:
 
 ~~~
 import os
 
-os.environ['DASK_MASTER_ADDRESS']
+os.environ['DASK_SCHEDULER']
 ~~~
 
 ## Included Packages
