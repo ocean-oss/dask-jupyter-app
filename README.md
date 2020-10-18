@@ -5,9 +5,10 @@ This app runs a fully-managed Dask cluster of an arbitrary size. It also launche
 To access the Dask cluster in your notebooks simply use the `DASK_SCHEDULER` environment variable:
 
 ~~~
+from dask.distributed import Client
 import os
 
-os.environ['DASK_SCHEDULER']
+client = Client(os.environ['DASK_SCHEDULER'])
 ~~~
 
 ## Included Packages
