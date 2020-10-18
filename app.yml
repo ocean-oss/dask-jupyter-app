@@ -11,7 +11,7 @@ steps:
           value: reserve_port()
         - name: dashboard_port
           value: reserve_port()
-        - name: address
+        - name: url
           value: "tcp://{{ engines.dask-scheduler.vars.private_ip }}:{{ engines.dask-scheduler.vars.port }}"
       orchestrator:
         type: Orchestrator::MainWithWorkers
