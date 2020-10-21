@@ -37,33 +37,32 @@ steps:
             label: Dask Scheduler Dashboard
             url: "http://{{ engines.dask-scheduler.ui.buttons.self.node.public_ip }}:{{ engines.dask-scheduler.vars.dashboard_port }}"
   - engines:
-      - name: dask-worker
-        vars:
-          - name: port
-            value: "{% reserve_public_port %}"
-          - name: nanny_port
-            value: "{% reserve_public_port %}"
-          - name: dashboard_port
-            value: "{% reserve_public_port %}"
-        orchestrator:
-          deployment_strategy: workers_fill_pool
-          snapshot_name: dask
-          container:
-            user: root
-            workdir: /work
-            mounts:
-              engine: /etc/ocean
-              data_stores: "{{ engines.dask-worker.orchestrator.container.workdir }}"
-              ssh: "/home/{{ workspace.user.name }}/.ssh"
-            nodes:
-              worker:
-                command: "{{ engines.dask-worker.orchestrator.container.mounts.engine }}/startup.sh"
-        ui:
-          buttons:
-            - node_target: workers
-              label: Dask Worker Dashboard
-              url: "http://{{ engines.dask-worker.ui.buttons.self.node.public_ip }}:{{ engines.dask-worker.vars.dashboard_port }}"
-  - engines:
+    - name: dask-worker
+      vars:
+        - name: port
+          value: "{% reserve_public_port %}"
+        - name: nanny_port
+          value: "{% reserve_public_port %}"
+        - name: dashboard_port
+          value: "{% reserve_public_port %}"
+      orchestrator:
+        deployment_strategy: workers_fill_pool
+        snapshot_name: dask
+        container:
+          user: root
+          workdir: /work
+          mounts:
+            engine: /etc/ocean
+            data_stores: "{{ engines.dask-worker.orchestrator.container.workdir }}"
+            ssh: "/home/{{ workspace.user.name }}/.ssh"
+          nodes:
+            worker:
+              command: "{{ engines.dask-worker.orchestrator.container.mounts.engine }}/startup.sh"
+      ui:
+        buttons:
+          - node_target: workers
+            label: Dask Worker Dashboard
+            url: "http://{{ engines.dask-worker.ui.buttons.self.node.public_ip }}:{{ engines.dask-worker.vars.dashboard_port }}"
     - name: jupyter
       vars:
         - name: port
