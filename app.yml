@@ -1,6 +1,11 @@
 ---
 ocean:
   version: "1"
+snapshots:
+  - name: dask
+    registry: docker_hub
+    image: jupyter/scipy-notebook
+    tag: latest
 steps:
   - engines:
     - name: dask-scheduler
@@ -14,15 +19,8 @@ steps:
         - name: url
           value: "tcp://{{ engines.dask-scheduler.vars.private_ip }}:{{ engines.dask-scheduler.vars.port }}"
       orchestrator:
-        type: Orchestrator::MainWithWorkers
-        deploy_to_main: true
-        deploy_to_workers: false
-        snapshot:
-          registry:
-            name: docker_hub
-          image:
-            name: jupyter/scipy-notebook
-          name: latest
+        deployment_strategy: main
+        snapshot_name: dask
         container:
           user: root
           workdir: /work
@@ -48,15 +46,8 @@ steps:
           - name: dashboard_port
             value: "{% reserve_public_port %}"
         orchestrator:
-          type: Orchestrator::MainWithWorkers
-          deploy_to_main: false
-          deploy_to_workers: true
-          snapshot:
-            registry:
-              name: docker_hub
-            image:
-              name: jupyter/scipy-notebook
-            name: latest
+          deployment_strategy: workers_fill_pool
+          snapshot_name: dask
           container:
             user: root
             workdir: /work
@@ -80,15 +71,8 @@ steps:
         - name: token
           value: "{% generate_uuid %}"
       orchestrator:
-        type: Orchestrator::MainWithWorkers
-        deploy_to_main: true
-        deploy_to_workers: false
-        snapshot:
-          registry:
-            name: docker_hub
-          image:
-            name: jupyter/scipy-notebook
-          name: latest
+        deployment_strategy: main
+        snapshot_name: dask
         container:
           user: root
           workdir: /work
