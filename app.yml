@@ -8,6 +8,45 @@ snapshots:
     tag: latest
 steps:
   - engines:
+    - name: jupyter
+      vars:
+        - name: port
+          value: "{% reserve_public_port %}"
+        - name: token
+          value: "{% generate_uuid %}"
+      orchestrator:
+        deployment_strategy: main
+        snapshot_name: dask
+        container:
+          user: root
+          workdir: /work
+          mounts:
+            engine: /etc/ocean
+            data_stores: "{{ engines.jupyter.orchestrator.container.workdir }}"
+            ssh: "/home/{{ workspace.user.name }}/.ssh"
+          nodes:
+            main:
+              command: "{{ engines.jupyter.orchestrator.container.mounts.engine }}/startup.sh"
+              env_vars:
+                - name: JUPYTER_ENABLE_LAB
+                  value: "yes"
+                - name: NB_UID
+                  value: "{{ workspace.user.uid }}"
+                - name: NB_GID
+                  value: "{{ workspace.user.gid }}"
+                - name: CHOWN_HOME
+                  value: "yes"
+                - name: GRANT_SUDO
+                  value: "yes"
+                - name: RESTARTABLE
+                  value: "yes"
+                - name: DASK_SCHEDULER
+                  value: "{{ engines.dask-scheduler.vars.url }}"
+      ui:
+        buttons:
+          - node_target: main
+            label: Jupyter Notebook
+            url: "http://{{ engines.jupyter.ui.buttons.self.node.public_ip }}:{{ engines.jupyter.vars.port }}?token={{ engines.jupyter.vars.token }}"
     - name: dask-scheduler
       vars:
         - name: private_ip
@@ -63,42 +102,3 @@ steps:
           - node_target: workers
             label: Dask Worker Dashboard
             url: "http://{{ engines.dask-worker.ui.buttons.self.node.public_ip }}:{{ engines.dask-worker.vars.dashboard_port }}"
-    - name: jupyter
-      vars:
-        - name: port
-          value: "{% reserve_public_port %}"
-        - name: token
-          value: "{% generate_uuid %}"
-      orchestrator:
-        deployment_strategy: main
-        snapshot_name: dask
-        container:
-          user: root
-          workdir: /work
-          mounts:
-            engine: /etc/ocean
-            data_stores: "{{ engines.jupyter.orchestrator.container.workdir }}"
-            ssh: "/home/{{ workspace.user.name }}/.ssh"
-          nodes:
-            main:
-              command: "{{ engines.jupyter.orchestrator.container.mounts.engine }}/startup.sh"
-              env_vars:
-                - name: JUPYTER_ENABLE_LAB
-                  value: yes
-                - name: NB_UID
-                  value: "{{ workspace.user.uid }}"
-                - name: NB_GID
-                  value: "{{ workspace.user.gid }}"
-                - name: CHOWN_HOME
-                  value: yes
-                - name: GRANT_SUDO
-                  value: yes
-                - name: RESTARTABLE
-                  value: yes
-                - name: DASK_SCHEDULER
-                  value: "{{ engines.dask-scheduler.vars.url }}"
-      ui:
-        buttons:
-          - node_target: main
-            label: Jupyter Notebook
-            url: "http://{{ engines.jupyter.ui.buttons.self.node.public_ip }}:{{ engines.jupyter.vars.port }}?token={{ engines.jupyter.vars.token }}"
