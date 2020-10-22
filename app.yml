@@ -8,6 +8,35 @@ snapshots:
     tag: latest
 steps:
   - engines:
+    - name: dask-scheduler
+      vars:
+        - name: private_ip
+          value: "{{ engines.dask-scheduler.deployment.nodes.main.private_ip }}"
+        - name: port
+          value: "{% reserve_public_port %}"
+        - name: dashboard_port
+          value: "{% reserve_public_port %}"
+        - name: url
+          value: "tcp://{{ engines.dask-scheduler.vars.private_ip }}:{{ engines.dask-scheduler.vars.port }}"
+      orchestrator:
+        deployment_strategy: main
+        snapshot_name: dask
+        container:
+          user: root
+          workdir: /work
+          mounts:
+            engine: /etc/ocean
+            data_stores: "{{ engines.dask-scheduler.orchestrator.container.workdir }}"
+            ssh: "/home/{{ workspace.user.name }}/.ssh"
+          nodes:
+            main:
+              command: "{{ engines.dask-scheduler.orchestrator.container.mounts.engine }}/startup.sh"
+      ui:
+        buttons:
+          - node_target: main
+            label: Dask Scheduler Dashboard
+            url: "http://{{ engines.dask-scheduler.ui.buttons.self.node.public_ip }}:{{ engines.dask-scheduler.vars.dashboard_port }}"
+  - engines:
     - name: jupyter
       vars:
         - name: port
@@ -47,35 +76,6 @@ steps:
           - node_target: main
             label: Jupyter Notebook
             url: "http://{{ engines.jupyter.ui.buttons.self.node.public_ip }}:{{ engines.jupyter.vars.port }}?token={{ engines.jupyter.vars.token }}"
-    - name: dask-scheduler
-      vars:
-        - name: private_ip
-          value: "{{ engines.dask-scheduler.deployment.nodes.main.private_ip }}"
-        - name: port
-          value: "{% reserve_public_port %}"
-        - name: dashboard_port
-          value: "{% reserve_public_port %}"
-        - name: url
-          value: "tcp://{{ engines.dask-scheduler.vars.private_ip }}:{{ engines.dask-scheduler.vars.port }}"
-      orchestrator:
-        deployment_strategy: main
-        snapshot_name: dask
-        container:
-          user: root
-          workdir: /work
-          mounts:
-            engine: /etc/ocean
-            data_stores: "{{ engines.dask-scheduler.orchestrator.container.workdir }}"
-            ssh: "/home/{{ workspace.user.name }}/.ssh"
-          nodes:
-            main:
-              command: "{{ engines.dask-scheduler.orchestrator.container.mounts.engine }}/startup.sh"
-      ui:
-        buttons:
-          - node_target: main
-            label: Dask Scheduler Dashboard
-            url: "http://{{ engines.dask-scheduler.ui.buttons.self.node.public_ip }}:{{ engines.dask-scheduler.vars.dashboard_port }}"
-  - engines:
     - name: dask-worker
       vars:
         - name: port
