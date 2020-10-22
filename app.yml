@@ -83,7 +83,7 @@ steps:
         - name: nanny_port
           value: "{% reserve_private_port %}"
         - name: dashboard_port
-          value: "{% reserve_private_port %}"
+          value: "{% reserve_public_port %}"
       orchestrator:
         deployment_strategy: workers_fill_pool
         snapshot_name: dask
