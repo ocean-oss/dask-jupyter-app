@@ -40,11 +40,11 @@ steps:
     - name: dask-worker
       vars:
         - name: port
-          value: "{% reserve_public_port %}"
+          value: "{% reserve_private_port %}"
         - name: nanny_port
-          value: "{% reserve_public_port %}"
+          value: "{% reserve_private_port %}"
         - name: dashboard_port
-          value: "{% reserve_public_port %}"
+          value: "{% reserve_private_port %}"
       orchestrator:
         deployment_strategy: workers_fill_pool
         snapshot_name: dask
