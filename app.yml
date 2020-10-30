@@ -25,12 +25,16 @@ steps:
           user: root
           workdir: /work
           mounts:
-            engine: /etc/ocean
+            files:
+              - name: dask_scheduler
+                app_path: dask_scheduler
+                container_path: /ocean/etc/dask_scheduler
+                readonly: true
             data_stores: "{{ engines.dask_scheduler.orchestrator.container.workdir }}"
             ssh: "/home/{{ workspace.user.name }}/.ssh"
           nodes:
             main:
-              command: "{{ engines.dask_scheduler.orchestrator.container.mounts.engine }}/startup.sh"
+              command: "{{ engines.dask_scheduler.orchestrator.container.mounts.files.dask_scheduler.container_path }}/startup.sh"
       ui:
         buttons:
           - node_target: main
@@ -50,12 +54,16 @@ steps:
           user: root
           workdir: /work
           mounts:
-            engine: /etc/ocean
+            files:
+              - name: jupyter
+                app_path: jupyter
+                container_path: /ocean/etc/jupyter
+                readonly: true
             data_stores: "{{ engines.jupyter.orchestrator.container.workdir }}"
             ssh: "/home/{{ workspace.user.name }}/.ssh"
           nodes:
             main:
-              command: "{{ engines.jupyter.orchestrator.container.mounts.engine }}/startup.sh"
+              command: "{{ engines.jupyter.orchestrator.container.mounts.files.jupyter.container_path }}/startup.sh"
               env_vars:
                 - name: JUPYTER_ENABLE_LAB
                   value: "yes"
@@ -91,12 +99,16 @@ steps:
           user: root
           workdir: /work
           mounts:
-            engine: /etc/ocean
+            files:
+              - name: dask_worker
+                app_path: dask_worker
+                container_path: /ocean/etc/dask_worker
+                readonly: true
             data_stores: "{{ engines.dask_worker.orchestrator.container.workdir }}"
             ssh: "/home/{{ workspace.user.name }}/.ssh"
           nodes:
             worker:
-              command: "{{ engines.dask_worker.orchestrator.container.mounts.engine }}/startup.sh"
+              command: "{{ engines.dask_worker.orchestrator.container.mounts.files.dask_worker.container_path }}/startup.sh"
       ui:
         buttons:
           - node_target: workers
