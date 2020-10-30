@@ -2,7 +2,7 @@
 
 set -e
 
-dask_worker \
+dask-worker \
   --worker-port {{ engines.dask_worker.vars.port }} \
   --nanny-port {{ engines.dask_worker.vars.nanny_port }} \
   --dashboard \

@@ -2,7 +2,7 @@
 
 set -e
 
-dask_scheduler \
+dask-scheduler \
   --host {{ engines.dask_scheduler.vars.private_ip }} \
   --port {{ engines.dask_scheduler.vars.port }} \
   --dashboard \
