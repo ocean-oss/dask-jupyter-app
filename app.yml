@@ -102,7 +102,7 @@ steps:
       ui:
         buttons:
           - label: Jupyter Notebook
-            url: "http://{{ engines.jupyter.networking.dns.url }}:{{ engines.jupyter.networking.ports.scheduler.value }}?token={{ engines.jupyter.vars.token }}"
+            url: "http://{{ engines.jupyter.networking.dns.url }}:{{ engines.jupyter.networking.ports.jupyter.value }}?token={{ engines.jupyter.vars.token }}"
     - name: dask_worker
       networking:
         ports:
