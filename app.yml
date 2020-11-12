@@ -42,7 +42,7 @@ steps:
       ui:
         buttons:
           - label: Dask Scheduler Dashboard
-            url: "http://{{ engines.dask_scheduler.ui.buttons.self.node.public_ip }}:{{ engines.dask_scheduler.networking.ports.dashboard.value }}"
+            url: "http://{{ engines.dask_scheduler.networking.dns.url }}:{{ engines.dask_scheduler.networking.ports.dashboard.value }}"
   - engines:
     - name: jupyter
       settings:
@@ -102,7 +102,7 @@ steps:
       ui:
         buttons:
           - label: Jupyter Notebook
-            url: "http://{{ engines.jupyter.ui.buttons.self.node.public_ip }}:{{ engines.jupyter.networking.ports.scheduler.value }}?token={{ engines.jupyter.vars.token }}"
+            url: "http://{{ engines.jupyter.networking.dns.url }}:{{ engines.jupyter.networking.ports.scheduler.value }}?token={{ engines.jupyter.vars.token }}"
     - name: dask_worker
       networking:
         ports:
