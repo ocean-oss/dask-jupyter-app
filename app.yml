@@ -1,105 +1,126 @@
 ---
 ocean:
   version: "1"
-snapshots:
+images:
   - name: dask
     registry: docker_hub
     image: jupyter/scipy-notebook
     tag: latest
+    snapshottable: true
 steps:
   - engines:
     - name: dask_scheduler
+      networking:
+        dns:
+          enabled: true
+          default_value: ray
+          label: Dask Scheduler URL
+        ports:
+          - name: scheduler
+            public: true
+          - name: dashboard
+            public: true
       vars:
         - name: private_ip
           value: "{{ engines.dask_scheduler.deployment.nodes.main.private_ip }}"
-        - name: port
-          value: "{% reserve_public_port %}"
-        - name: dashboard_port
-          value: "{% reserve_public_port %}"
         - name: url
-          value: "tcp://{{ engines.dask_scheduler.vars.private_ip }}:{{ engines.dask_scheduler.vars.port }}"
-      orchestrator:
-        deployment_strategy: main
-        snapshot_name: dask
-        container:
-          user: root
-          workdir: /work
-          mounts:
-            app_files:
-              - name: dask_scheduler
-                app_files_path: dask_scheduler
-                container_path: /ocean/etc/dask_scheduler
-                readonly: true
-            data_stores: "{{ engines.dask_scheduler.orchestrator.container.workdir }}"
-          command: "{{ engines.dask_scheduler.orchestrator.container.mounts.app_files.dask_scheduler.container_path }}/startup.sh"
+          value: "tcp://{{ engines.dask_scheduler.vars.private_ip }}:{{ engines.dask_scheduler.networking.ports.scheduler.value }}"
+      deployment:
+        strategy: main
+      container:
+        image_name: dask
+        user: root
+        workdir: /work
+        mounts:
+          app_files:
+            - name: dask_scheduler
+              app_files_path: dask_scheduler
+              container_path: /ocean/etc/dask_scheduler
+              readonly: true
+          data_stores: "{{ engines.dask_scheduler.orchestrator.container.workdir }}"
+        command: "{{ engines.dask_scheduler.orchestrator.container.mounts.app_files.dask_scheduler.container_path }}/startup.sh"
       ui:
         buttons:
           - label: Dask Scheduler Dashboard
-            url: "http://{{ engines.dask_scheduler.ui.buttons.self.node.public_ip }}:{{ engines.dask_scheduler.vars.dashboard_port }}"
+            url: "http://{{ engines.dask_scheduler.ui.buttons.self.node.public_ip }}:{{ engines.dask_scheduler.networking.ports.dashboard.value }}"
   - engines:
     - name: jupyter
+      settings:
+        - name: mode
+          label: Jupyter Mode
+          style: dropdown
+          default_value: 'lab'
+          options:
+            - value: lab
+              label: 'Lab'
+            - value: notebook
+              label: 'Notebook'
+      networking:
+        dns:
+          enabled: true
+          default_value: jupyter
+          label: Jupyter URL
+        ports:
+          - name: jupyter
+            public: true
       vars:
-        - name: port
-          value: "{% reserve_public_port %}"
         - name: token
           value: "{% generate_uuid %}"
-      orchestrator:
-        deployment_strategy: main
-        snapshot_name: dask
-        container:
-          user: root
-          workdir: /work
-          mounts:
-            app_files:
-              - name: jupyter
-                app_files_path: jupyter
-                container_path: /ocean/etc/jupyter
-                readonly: true
-            data_stores: "{{ engines.jupyter.orchestrator.container.workdir }}"
-          command: "{{ engines.jupyter.orchestrator.container.mounts.app_files.jupyter.container_path }}/startup.sh"
-          env_vars:
-            - name: JUPYTER_ENABLE_LAB
-              value: "yes"
-            - name: NB_UID
-              value: "{{ workspace.user.uid }}"
-            - name: NB_GID
-              value: "{{ workspace.user.gid }}"
-            - name: CHOWN_HOME
-              value: "yes"
-            - name: GRANT_SUDO
-              value: "yes"
-            - name: RESTARTABLE
-              value: "yes"
-            - name: DASK_SCHEDULER
-              value: "{{ engines.dask_scheduler.vars.url }}"
+      deployment:
+        strategy: main
+      container:
+        image_name: dask
+        user: root
+        workdir: "/home/{{ workspace.user.name }}"
+        mounts:
+          app_files:
+            - name: jupyter
+              app_files_path: jupyter
+              container_path: /ocean/etc/jupyter
+              readonly: true
+          data_stores: "{{ engines.jupyter.orchestrator.container.workdir }}"
+        command: "{{ engines.jupyter.orchestrator.container.mounts.app_files.jupyter.container_path }}/startup.sh"
+        env_vars:
+          - name: JUPYTER_ENABLE_LAB
+              value: "{% if engines.jupyter.settings.mode.value == 'lab' %}yes{% else %}no{% endif %}"
+                - name: NB_UID
+                  value: "{{ workspace.user.uid }}"
+                - name: NB_GID
+                  value: "{{ workspace.user.gid }}"
+                - name: NB_USER
+                  value: "{{ workspace.user.name }}"
+                - name: NB_GROUP
+                  value: "{{ workspace.user.group }}"
+                - name: CHOWN_HOME
+                  value: "yes"
+                - name: GRANT_SUDO
+                  value: "yes"
+                - name: RESTARTABLE
+                  value: "yes"
+          - name: DASK_SCHEDULER
+            value: "{{ engines.dask_scheduler.vars.url }}"
       ui:
         buttons:
           - label: Jupyter Notebook
-            url: "http://{{ engines.jupyter.ui.buttons.self.node.public_ip }}:{{ engines.jupyter.vars.port }}?token={{ engines.jupyter.vars.token }}"
+            url: "http://{{ engines.jupyter.ui.buttons.self.node.public_ip }}:{{ engines.jupyter.networking.ports.scheduler.value }}?token={{ engines.jupyter.vars.token }}"
     - name: dask_worker
-      vars:
-        - name: port
-          value: "{% reserve_private_port %}"
-        - name: nanny_port
-          value: "{% reserve_private_port %}"
-        - name: dashboard_port
-          value: "{% reserve_public_port %}"
-      orchestrator:
-        deployment_strategy: workers_fill_pool
-        snapshot_name: dask
-        container:
-          user: root
-          workdir: /work
-          mounts:
-            app_files:
-              - name: dask_worker
-                app_files_path: dask_worker
-                container_path: /ocean/etc/dask_worker
-                readonly: true
-            data_stores: "{{ engines.dask_worker.orchestrator.container.workdir }}"
-          command: "{{ engines.dask_worker.orchestrator.container.mounts.app_files.dask_worker.container_path }}/startup.sh"
-      ui:
-        buttons:
-          - node_target: workers
-            label: Dask Worker Dashboard
-            url: "http://{{ engines.dask_worker.ui.buttons.self.node.public_ip }}:{{ engines.dask_worker.vars.dashboard_port }}"
+      networking:
+        ports:
+          - name: worker
+            public: false
+          - name: nanny
+            public: false
+      deployment:
+        strategy: workers_fill_pool
+      container:
+        image_name: dask
+        user: root
+        workdir: /work
+        mounts:
+          app_files:
+            - name: dask_worker
+              app_files_path: dask_worker
+              container_path: /ocean/etc/dask_worker
+              readonly: true
+          data_stores: "{{ engines.dask_worker.orchestrator.container.workdir }}"
+        command: "{{ engines.dask_worker.orchestrator.container.mounts.app_files.dask_worker.container_path }}/startup.sh"

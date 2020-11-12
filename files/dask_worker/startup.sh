@@ -3,9 +3,8 @@
 set -e
 
 dask-worker \
-  --worker-port {{ engines.dask_worker.vars.port }} \
-  --nanny-port {{ engines.dask_worker.vars.nanny_port }} \
-  --dashboard \
-  --dashboard-address :{{ engines.dask_worker.vars.dashboard_port }} \
+  --worker-port {{ engines.dask_worker.networking.ports.worker.value }} \
+  --nanny-port {{ engines.dask_worker.networking.ports.nanny.value }} \
+  --no-dashboard \
   --nthreads {{ engines.dask_worker.deployment.hardware.cpu.vcpus }} \
   {{ engines.dask_scheduler.vars.url }}
