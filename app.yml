@@ -29,7 +29,7 @@ steps:
       container:
         image:
           name: dask
-          editable: true
+          editable: false
         user: root
         workdir: /work
         mounts:
@@ -116,7 +116,9 @@ steps:
       deployment:
         strategy: workers_fill_pool
       container:
-        image_name: dask
+        image:
+          name: dask
+          editable: false
         user: root
         workdir: /work
         mounts:
