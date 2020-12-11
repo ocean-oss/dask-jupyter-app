@@ -49,7 +49,7 @@ steps:
       settings:
         - name: mode
           label: Jupyter Mode
-          style: dropdown
+          type: dropdown
           default_value: 'lab'
           options:
             - value: lab
