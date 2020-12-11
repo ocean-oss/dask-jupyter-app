@@ -29,7 +29,7 @@ steps:
       container:
         image:
           name: dask
-          editable: false
+          editable: true
         user: root
         workdir: /work
         mounts:
@@ -118,7 +118,7 @@ steps:
       container:
         image:
           name: dask
-          editable: false
+          editable: true
         user: root
         workdir: /work
         mounts:
