@@ -6,7 +6,6 @@ images:
     registry: docker_hub
     image: jupyter/scipy-notebook
     tag: latest
-    snapshottable: true
 steps:
   - engines:
     - name: dask_scheduler
@@ -28,7 +27,9 @@ steps:
       deployment:
         strategy: main
       container:
-        image_name: dask
+        image:
+          name: dask
+          editable: true
         user: root
         workdir: /work
         mounts:
@@ -69,7 +70,9 @@ steps:
       deployment:
         strategy: main
       container:
-        image_name: dask
+        image:
+          name: dask
+          editable: true
         user: root
         workdir: "/home/{{ workspace.user.name }}"
         mounts:
